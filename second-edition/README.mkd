@@ -1,0 +1,300 @@
+# Node Tutorial
+## Fundamentals
+### Require
+Require allows you to:
+1. Load modules that come with Node.js i.e. ``http`` module
+2. Load in third party libraries i.e. ``Express``
+3. To require our own files so you can fragment apps
+
+### Template Strings
+Template strings, introduced in ES6, is a new way of using strings and allows for better
+1. String interpolation
+2. Embedded Expressions
+3. Multiline Strings without hacks
+4. String formatting
+
+```
+var user = 'Dillon';
+var age = 20;
+Console.log(`Hello ${user}! You are ${age}`);
+```
+
+### Export Modules
+With export modules you can refer to properties or functions in another file if that file has it set as an export module. This is used for fragmenting applications.
+```
+module.exports.addNote =  () => {
+
+    console.log('Add note');
+    return 'New Note';
+}
+```
+
+### Fat Arrows
+For anonymous functions, you can use fat arrows rather than using 'function'
+```
+module.exports.addNote =  function() {
+    return 'Old Way';
+}
+
+module.exports.addNote =  () => {
+    return 'New Way';
+}
+
+```
+
+### Arguments
+You can also pass arguments into the application when you are running it by using the process object. With process we can ``process.argv[2];`` which allows us to add an argument when running our app.
+```
+ node app.js remove --title="secrets"
+```
+
+### Reading/Writing/Parsing JSON
+#### Reading and Parsing
+To pull something and convert it from a file from JSON, first we store it in a variable using `fs`. Then, once it's stored inside the variable we parse the data we pulled down so we can use it. It will be converted from JSON text to an object.
+```
+var notesString = fs.readFileSync('notes-data.json');
+var notesString = JSON.parse(notesString);
+
+{"title":"heyyy","body":"what's up"}
+=>
+{title:heyyy,body:what's up}
+```
+#### Parsing and Writing
+If you want to write to a file, first you need to conver the object that you're trying to store and stringify it so it can be stored as JSON. Once the object is stringified, it can be stored.
+```
+fs.writeFileSync('notes-data.json', JSON.stringify(notes));
+
+{title:heyyy,body:what's up}
+=>
+{"title":"heyyy","body":"what's up"}
+```
+### Create, Read, List, Delete Operations
+#### Create
+First we fetch all of the notes in the JSON file. We do this to uphold data integrity by ensuring that there are no duplicates. We then initialize our `note` object that will be saved, it's data coming from the parameters that will populate this object.
+Next, using the `filter`keyword in JavaScript we check to see if there are any duplicates in the list of notes we pulled down.
+```
+var duplicateNotes = notes.filter((note) => note.title === title);
+```
+Then, if the length of the array is 0, meaning there are no duplicates, we push the note object into the array of notes we have and save them.
+```
+if(duplicateNotes.length === 0){
+    notes.push(note);
+    saveNotes(notes);
+    return note;
+}
+```
+
+#### Read
+We use `fs` to read in the file using `readFileSync` and store the results inside of a variable. The results are parsed using the JSON `parse` keyword. This is surrounded in a `try/catch` in case what we return is empty, in that case we return an empty array. 
+```
+try {
+    var notesString = fs.readFileSync('notes-data.json');
+    return JSON.parse(notesString);
+} catch(e) {
+    return [];
+}
+```
+#### Delete
+To delete something, first we fetch all of the notes and store the results in an array. Next, we use the `filter` JavaScript keyword. We step through the array and if the name of the note is not equal to the name entered, it is pushed into an array.
+```
+var filteredNotes = notes.filter((note) => note.title !== title);
+```
+Finally, the new array is saved over the previous one.
+### Debugging
+#### Inspect
+To run through the debugger in the command line, you run the command `node inspect <name>`.
+Once run through the debugger, you can step through the application line by line, continue till execution, check variable values, manipulate values or mess around with functions.
+The commands are as follows:
+```
+list(n) - to list the nth lines above and under the current line you're on
+n       - next step in the application
+c       - continue to completion
+repl    - Read-Eval-Print-Loop, check variable values, mess around with functions manipulate values etc.
+```
+You can also use the `debugger` keyword to continue to a certain point of the application.
+#### Chrome Debugger
+To run the debugger via chrome use `node --inspect-brk <name>`, go to `chrome://inspect/`
+and click `Open dedicated DevTools for Node`.
+### Arrow functions vs Traditional Functions
+Traditional functions are straight forward, allowing for parameters. With arrow functions, you can have a shorter function without any braces and allows for you to return all on one line.
+```
+Traditional:
+var square = (x) =>{
+    var result = x*x;
+    return result;
+}
+```
+With ES6 it can be all done on one line and if there is only 1 argument you don't need parentheses:
+
+```
+Arrow Function:
+var square = x => x*x;
+```
+Usually if we want to refer to something we can say this.param, but arrow functions do not bind 'this' keyword. Regular functions can have arguments arrays that are accessable inside the function, arrow functions do not have access to those arguments. Instead we have access to the GLOBAL arguments variable.
+
+Main differences:
+1. You do not have access to 'this' binding
+2. You do not have access to the 'arguments' keyword
+
+Errors normally occur when you try to create methods on an object and use arrow functions. Do not use arrow functions in those cases.
+
+ES6 Arrow Functions:
+```
+var user = {
+    name: 'Dillon',
+    sayHi: () => {
+        console.log(arguments);
+        console.log(`${user.name} says hi`);
+    }
+};
+```
+Traditional:
+```
+var user = {
+    name: 'Dillon',
+    sayHi (){
+        console.log(arguments);
+        console.log(`${this.name} says hi`);
+    }
+};
+
+```
+
+## Asynchronous Node
+### Call Stack & Event Loop
+The call stack is a data structure that holds data about procedures that are currently running in a given program. It is a Last In First Out data structure in that the last item that is added to the stack is the first item to be removed from the stack. This stack is so that procedures can be executed in an organized fashion.
+
+![Alt Text](http://cek.io/images/event-loop/loupe.gif)
+
+### Encoding URL's
+You can query a URL by encoding something and appending it to the end of the URL. For example, if I want to search the address '1301 lombard street philadelphia' this address will need to tbe encoded so that we can get rid of all of the spaces and inject it into the URL.
+You can encode the address as follows:
+```
+var encodedAddress = encodeURIComponent(argv.address);
+1301 lombard street philadelphia => 1301%20lombard%20street%20philadelphia
+```
+Once it's encoded it can be appended to a URL for querying.
+```
+http://www.mapquestapi.com/geocoding/v1/address?key=M57UBiG89z0lFeGwUnH2rPxHAsTehAco&location=1301%20lombard%20street%20philadelphia
+```
+
+### Callback Functions
+A callback function is an asynchronous function that must be executed at the end of a task. For example, we can have a `setTimeout` that, once the timer is finished, will get the user and log it to the screen.
+```
+var getUser = (id, callback) => {
+    var user = {
+        id,
+        name: 'Dillon'
+    };
+
+    setTimeout(() => {
+        callback(user);
+    }, 3000);
+};
+
+getUser(10, (user) => {
+    console.log(user);
+});
+```
+### HTTP Requests
+To make a HTTP request, we can use the `Request` node module. This module ensures the simplest way possible to use HTTP protocols. In order to use this module, the syntax is as follows:
+```
+const request = require('request');
+request({
+        url: the url to query,
+        json: define whether or not the response is JSON
+    }, (error, response, body) => {
+          console.log('error:', error); // Print the error if one occurred
+        console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+        console.log('body:', body); // Print the body of the response
+
+    });
+
+```
+### Promises
+A `promise` is an object that represents the eventual completion or failure of an asynchronous operation and its resulting value. A promise has 3 states:
+1. Pending: the initial state, neither fulfilled nor rejected
+2. Fulfilled: meaning the operation completed successfully
+3. Rejected: meaning that the operation failed
+The syntax for a promise is as follows:
+```
+First we define a promise, which has a resolve and reject
+var promise1 = new Promise(function(resolve, reject) {
+  setTimeout(function() {
+    resolve('foo');
+  }, 300);
+});
+
+promise1.then(function(value) {
+  console.log(value);
+  // expected output: "foo"
+});
+
+console.log(promise1);
+```
+In short:
+```
+somePromise.then((passMessage) =>{ after passing do this}, 
+(failMessage) => { after failing do this})
+```
+
+## Web Servers and Web Deployment
+### Express
+Express.js is a framework that provides features that allows for the creation of robust APIs. The steps to creating a basic express API is as follows:
+
+First we require the express dependency and create an express `app` which is the return result of calling express as a function. This gives us access to the express functions.
+```
+const express = require('express');
+var app = express();
+```
+Once our express app instance is set up, we can setup the HTTP route handlers. This means whenever we navigate to a certain route, we have a handler for that route that has a request and a response.
+```
+app.get('/', (request, response) => {
+    console.log('Welcome to the homepage');
+)};
+```
+Once we have our HTTP route handlers setup, we can then listen on a port, meaning on the localhost whenver we go to the port specified we can see our application.
+```
+app.listen(3000, () => {
+    console.log('Server is up on port 3000');
+});
+```
+Another thing that we can do is if we want to include a folder or do something upon launching the application, we can do `app.use`.
+```
+app.use(express.static(__dirname + '/static'));
+```
+
+## Testing
+### Mocha
+Mocha is a testing framework that allows you to write tests in JavaScript. If you want to add Mocha to your project you will only want to use it during development so you will save it as `npm install mocha --save-dev`. After Mocha is installed, you will want to suffix any file you create with `.test.js`. For example, we have a server file and we have a file for testing server, both of our files will be:
+```
+server.js
+server.test.js
+```
+After it's installed, in your `package.json` you will want to add `test-watch` which will run your tests for you and specify that your tests are suffixed with `.test.js`:
+
+```
+"scripts": {
+    "test": "mocha **/*.test.js",
+    "test-watch": "nodemon --exec \"npm test\""
+}
+```
+### Expect
+Overall, a test will essentially have an expected output of a function or method and has multiple keywords that can specify if it either does or does not include something.
+```
+describe('#GET /users', () => {
+    it('should return 3 users in the response', (done) => {
+        request(app)
+            .get('/users')
+            .expect(200)
+            .expect((res) => {
+                expect(res.body).toInclude({
+                    name: 'Dillon',
+                    age: 23
+                });
+            }).end(done);
+    });
+});
+
+```
+## MongoDB
